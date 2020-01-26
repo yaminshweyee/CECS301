@@ -1,0 +1,70 @@
+'timescale 1ns/100ps
+module CECS301_Lab1_tb();
+
+//inputs
+	reg clk, rst, SI;
+	reg[1:0] M;
+	reg[3:0] D;
+
+//outputs
+	wire[3:0] Q;
+
+//Instantitate the Unit Under Test
+	shift_reg4
+		uut(
+		     .clk(clk), .rst(rst), .SI(SI), 
+		     .M(M), .D(D), 
+                     .Q(Q)
+                   );
+
+//Generate clock with a 10 ns period
+  	always
+	   #5 clk = ~clk;
+
+//Initialize inputs
+
+	initial begin
+		$timeformat(-9, 1, "ns", 6);
+		clk = 0; rst = 0; M = 0; D = 0; SI = 0;
+
+		//These two clks take care of rst
+		@(negedge clk)
+		rst = 1;
+		@(negedge clk)
+		rst = 0;
+
+		//Exercise the "load" function with D = 0xD (1101). Note SI is don't care 	Q+ <- 1101
+		@(negedge clk)
+			{rst, M, D, SI} = 8'b0_01_1101_x;
+
+		//Exercise the "no change" function. Note both D and SI are don't care		Q+ <- 1101
+		@(negedge clk)
+			{rst, M, D, SI} =  8'b0_00_xxxx_x;
+
+		//Exercise the "shift right" function with SI =0. Note D is don't care		Q+ <- 0110
+		@(negedge clk)
+			{rst, M, D, SI} = 8'b0_11_xxxx_0;
+
+		//Exercise the "shift right" function with SI = 1. Note both D is don't care	Q+ <- 1011
+		@(negedge clk)
+			{rst, M, D, SI} = 8'b0_11_xxxx_1;
+
+		//Exercise the "no change" function. Note both D and SI are don't care 		Q+ <- 1011
+		@(negedge clk)
+			{rst, M, D, SI} = 8'b0_00_xxxx_x;
+
+		//Exercise the "rotate left" function. Note both D and SI are don't care	Q+ <- 0111
+		@(negedge clk)
+			{rst, M, D, SI} = 8'b0_10_xxxx_x;
+
+		//Exercise the "rotate left" function. Note both D and SI are don't care	Q+ <- 1110
+		@(negedge clk)
+			{rst, M, D, SI} = 8'b0_10_xxxx_x;
+
+		//Exercise the "no change" function. Note both D and SI are don't care		Q+ <- 1110
+		@(negedge clk)
+			{rst, M, D, SI} = 8'b0_00_xxxx_x;
+		$finish;
+	end
+
+endmodule 
